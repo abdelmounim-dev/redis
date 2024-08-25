@@ -137,7 +137,37 @@ func (p *Parser) readBulkString() (*Token, error) {
 
 // TODO: implement
 func (p *Parser) readArray() (*Token, error) {
-	return nil, nil
+	lenToken, err := p.readInteger()
+	if err != nil {
+		return nil, fmt.Errorf("READ ARRAY: %v", err)
+	}
+	n := lenToken.value.(int64)
+	if n == 0 {
+		_, err = ReadBytesUntilCRLF(p.buf)
+		if err != nil {
+			return nil, fmt.Errorf("READ ARRAY: %v", err)
+		}
+		return &Token{tType: BulkString, value: []byte("")}, nil
+	}
+	if n == -1 {
+		return &Token{tType: BulkString, value: nil}, nil
+	}
+	if n < -1 {
+		return nil, fmt.Errorf("READ ARRAY: Negative length (length < -1)")
+	}
+	tokens := make([]*Token, 0, n)
+
+	for i := int64(0); i < n; i++ {
+		t, err := p.NextToken()
+		if err != nil {
+			return nil, fmt.Errorf("READ ARRAY: %v", err)
+		}
+		tokens = append(tokens, t)
+	}
+
+	t := &Token{Array, tokens}
+
+	return t, nil
 }
 
 func (p *Parser) readNull() (*Token, error) {
