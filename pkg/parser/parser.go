@@ -63,8 +63,8 @@ func (p *Parser) readSimpleString() (*Token, error) {
 		return nil, fmt.Errorf("READ SIMPLE STRING: %v", err)
 	}
 	t := &Token{
-		tType: SimpleString,
-		value: string(bytes),
+		Type:  SimpleString,
+		Value: string(bytes),
 	}
 	return t, nil
 }
@@ -75,8 +75,8 @@ func (p *Parser) readSimpleError() (*Token, error) {
 		return nil, fmt.Errorf("READ SIMPLE ERROR: %v", err)
 	}
 	t := &Token{
-		tType: SimpleError,
-		value: string(bytes),
+		Type:  SimpleError,
+		Value: string(bytes),
 	}
 	return t, nil
 }
@@ -91,8 +91,8 @@ func (p *Parser) readInteger() (*Token, error) {
 		return nil, fmt.Errorf("READ INTEGER: %v", err)
 	}
 	t := &Token{
-		tType: Integer,
-		value: int64(num),
+		Type:  Integer,
+		Value: int64(num),
 	}
 	return t, nil
 }
@@ -102,16 +102,16 @@ func (p *Parser) readBulkString() (*Token, error) {
 	if err != nil {
 		return nil, fmt.Errorf("READ BULK STRING: %v", err)
 	}
-	n := lenToken.value.(int64)
+	n := lenToken.Value.(int64)
 	if n == 0 {
 		_, err = utils.ReadBytesUntilCRLF(p.buf)
 		if err != nil {
 			return nil, fmt.Errorf("READ BULK STRING: %v", err)
 		}
-		return &Token{tType: BulkString, value: []byte("")}, nil
+		return &Token{Type: BulkString, Value: []byte("")}, nil
 	}
 	if n == -1 {
-		return &Token{tType: BulkString, value: nil}, nil
+		return &Token{Type: BulkString, Value: nil}, nil
 	}
 	if n < -1 {
 		return nil, fmt.Errorf("READ BULK STRING: Negative length (length < -1)")
@@ -126,8 +126,8 @@ func (p *Parser) readBulkString() (*Token, error) {
 		return nil, fmt.Errorf("READ BULK STRING: %v", err)
 	}
 	t := &Token{
-		tType: BulkString,
-		value: b,
+		Type:  BulkString,
+		Value: b,
 	}
 	return t, nil
 }
@@ -138,16 +138,16 @@ func (p *Parser) readArray() (*Token, error) {
 	if err != nil {
 		return nil, fmt.Errorf("READ ARRAY: %v", err)
 	}
-	n := lenToken.value.(int64)
+	n := lenToken.Value.(int64)
 	if n == 0 {
 		_, err = utils.ReadBytesUntilCRLF(p.buf)
 		if err != nil {
 			return nil, fmt.Errorf("READ ARRAY: %v", err)
 		}
-		return &Token{tType: BulkString, value: []byte("")}, nil
+		return &Token{Type: BulkString, Value: []byte("")}, nil
 	}
 	if n == -1 {
-		return &Token{tType: BulkString, value: nil}, nil
+		return &Token{Type: BulkString, Value: nil}, nil
 	}
 	if n < -1 {
 		return nil, fmt.Errorf("READ ARRAY: Negative length (length < -1)")
@@ -191,8 +191,8 @@ func (p *Parser) readBoolean() (*Token, error) {
 		v = false
 	}
 	t := &Token{
-		tType: Boolean,
-		value: v,
+		Type:  Boolean,
+		Value: v,
 	}
 	return t, nil
 }

@@ -16,12 +16,12 @@ func TestRESPParser(t *testing.T) {
 		expected *Token
 		wantErr  bool
 	}{
-		{"NullBulkString", "$-1\r\n", &Token{tType: BulkString, value: nil}, false},
-		{"SimpleString", "+OK\r\n", &Token{tType: SimpleString, value: "OK"}, false},
-		{"Error", "-Error message\r\n", &Token{tType: SimpleError, value: "Error message"}, false},
-		{"Integer", ":1000\r\n", &Token{tType: Integer, value: int64(1000)}, false},
-		{"BulkString", "$5\r\nhello\r\n", &Token{tType: BulkString, value: []byte("hello")}, false},
-		{"EmptyBulkString", "$0\r\n\r\n", &Token{tType: BulkString, value: []byte("")}, false},
+		{"NullBulkString", "$-1\r\n", &Token{Type: BulkString, Value: nil}, false},
+		{"SimpleString", "+OK\r\n", &Token{Type: SimpleString, Value: "OK"}, false},
+		{"Error", "-Error message\r\n", &Token{Type: SimpleError, Value: "Error message"}, false},
+		{"Integer", ":1000\r\n", &Token{Type: Integer, Value: int64(1000)}, false},
+		{"BulkString", "$5\r\nhello\r\n", &Token{Type: BulkString, Value: []byte("hello")}, false},
+		{"EmptyBulkString", "$0\r\n\r\n", &Token{Type: BulkString, Value: []byte("")}, false},
 		{"Boolean True", "#t\r\n", &Token{Boolean, true}, false},
 		{"Boolean False", "#f\r\n", &Token{Boolean, false}, false},
 		{"Array", "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n", &Token{Array, []*Token{{BulkString, []byte("hello")}, {BulkString, []byte("world")}}}, false},
@@ -80,16 +80,16 @@ func deepEqualTokens(a, b *Token) bool {
 	if a == nil || b == nil {
 		return a == b
 	}
-	if a.tType != b.tType {
+	if a.Type != b.Type {
 		return false
 	}
-	switch a.tType {
+	switch a.Type {
 	case Array:
-		aArr, aOk := a.value.([]*Token)
-		bArr, bOk := b.value.([]*Token)
+		aArr, aOk := a.Value.([]*Token)
+		bArr, bOk := b.Value.([]*Token)
 		if !aOk || !bOk {
 			fmt.Printf("Array type assertion failed: aOk = %v, bOk = %v\n", aOk, bOk)
-			fmt.Printf("a.value type: %T, b.value type: %T\n", a.value, b.value)
+			fmt.Printf("a.value type: %T, b.value type: %T\n", a.Value, b.Value)
 			return false
 		}
 		if len(aArr) != len(bArr) {
@@ -109,7 +109,7 @@ func deepEqualTokens(a, b *Token) bool {
 	// 	return aOk && bOk && bytes.Equal(aStr, bStr)
 	// Add cases for other types as needed
 	default:
-		return reflect.DeepEqual(a.value, b.value)
+		return reflect.DeepEqual(a.Value, b.Value)
 	}
 }
 
@@ -118,9 +118,9 @@ func tokenToString(t *Token) string {
 	if t == nil {
 		return "<nil>"
 	}
-	switch t.tType {
+	switch t.Type {
 	case Array:
-		arr, ok := t.value.([]*Token)
+		arr, ok := t.Value.([]*Token)
 		if !ok {
 			return "<invalid array>"
 		}
@@ -130,13 +130,13 @@ func tokenToString(t *Token) string {
 		}
 		return fmt.Sprintf("Array[%s]", strings.Join(elements, ", "))
 	case BulkString:
-		str, ok := t.value.([]byte)
+		str, ok := t.Value.([]byte)
 		if !ok {
 			return "<invalid bulk string>"
 		}
 		return fmt.Sprintf("BulkString[%s]", string(str))
 	// Add cases for other types as needed
 	default:
-		return fmt.Sprintf("%v", t.value)
+		return fmt.Sprintf("%v", t.Value)
 	}
 }
