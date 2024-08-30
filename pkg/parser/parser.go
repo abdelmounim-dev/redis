@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-)
 
-type Token struct {
-	tType DataType
-	value interface{}
-}
+	"github.com/abdelmounim-dev/redis/pkg/utils"
+)
 
 type Parser struct {
 	buf *bufio.Reader
@@ -61,7 +58,7 @@ func (p *Parser) NextToken() (*Token, error) {
 }
 
 func (p *Parser) readSimpleString() (*Token, error) {
-	bytes, err := ReadBytesUntilCRLF(p.buf)
+	bytes, err := utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ SIMPLE STRING: %v", err)
 	}
@@ -73,7 +70,7 @@ func (p *Parser) readSimpleString() (*Token, error) {
 }
 
 func (p *Parser) readSimpleError() (*Token, error) {
-	bytes, err := ReadBytesUntilCRLF(p.buf)
+	bytes, err := utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ SIMPLE ERROR: %v", err)
 	}
@@ -85,7 +82,7 @@ func (p *Parser) readSimpleError() (*Token, error) {
 }
 
 func (p *Parser) readInteger() (*Token, error) {
-	bytes, err := ReadBytesUntilCRLF(p.buf)
+	bytes, err := utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ INTEGER: %v", err)
 	}
@@ -107,7 +104,7 @@ func (p *Parser) readBulkString() (*Token, error) {
 	}
 	n := lenToken.value.(int64)
 	if n == 0 {
-		_, err = ReadBytesUntilCRLF(p.buf)
+		_, err = utils.ReadBytesUntilCRLF(p.buf)
 		if err != nil {
 			return nil, fmt.Errorf("READ BULK STRING: %v", err)
 		}
@@ -124,7 +121,7 @@ func (p *Parser) readBulkString() (*Token, error) {
 	if err != nil {
 		return nil, fmt.Errorf("READ BULK STRING: %v", err)
 	}
-	_, err = ReadBytesUntilCRLF(p.buf)
+	_, err = utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ BULK STRING: %v", err)
 	}
@@ -143,7 +140,7 @@ func (p *Parser) readArray() (*Token, error) {
 	}
 	n := lenToken.value.(int64)
 	if n == 0 {
-		_, err = ReadBytesUntilCRLF(p.buf)
+		_, err = utils.ReadBytesUntilCRLF(p.buf)
 		if err != nil {
 			return nil, fmt.Errorf("READ ARRAY: %v", err)
 		}
@@ -171,7 +168,7 @@ func (p *Parser) readArray() (*Token, error) {
 }
 
 func (p *Parser) readNull() (*Token, error) {
-	_, err := ReadBytesUntilCRLF(p.buf)
+	_, err := utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ NULL: %v", err)
 	}
@@ -179,7 +176,7 @@ func (p *Parser) readNull() (*Token, error) {
 }
 
 func (p *Parser) readBoolean() (*Token, error) {
-	b, err := ReadBytesUntilCRLF(p.buf)
+	b, err := utils.ReadBytesUntilCRLF(p.buf)
 	if err != nil {
 		return nil, fmt.Errorf("READ BOOLEAN: %v", err)
 	}

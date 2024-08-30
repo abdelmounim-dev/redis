@@ -3,6 +3,12 @@ package parser
 // DataType represents the different types of RESP data.
 type DataType int
 
+// Token
+type Token struct {
+	tType DataType
+	value interface{}
+}
+
 // Enum values for DataType.
 const (
 	SimpleString DataType = iota
