@@ -33,6 +33,8 @@ func (h *Handlers) HandleCommand(t *parser.Token) (*parser.Token, error) {
 			return h.handleSet(t)
 		case "get":
 			return h.handleGet(t)
+		case "del":
+			return h.handleDelete(t)
 		default:
 			return &parser.Token{Type: parser.SimpleError, Value: "Command Not Supported"}, nil
 		}
@@ -117,4 +119,29 @@ func (h *Handlers) handleGet(t *parser.Token) (*parser.Token, error) {
 	}
 
 	return value, nil
+}
+func (h *Handlers) handleDelete(t *parser.Token) (*parser.Token, error) {
+	if len(t.Value.([]*parser.Token)) < 2 {
+		return &parser.Token{
+			Type:  parser.SimpleError,
+			Value: "ERR wrong number of arguments for command",
+		}, nil
+	}
+
+	deletedCount := 0
+	for i := 1; i < len(t.Value.([]*parser.Token)); i++ {
+		key := string(t.Value.([]*parser.Token)[i].Value.([]byte))
+		isDeleted, err := h.store.Delete(key)
+		if err != nil {
+			return nil, err
+		}
+		if isDeleted {
+			deletedCount++
+		}
+	}
+	deletedCountToken := &parser.Token{
+		Type:  parser.Integer,
+		Value: int64(deletedCount),
+	}
+	return deletedCountToken, nil
 }
