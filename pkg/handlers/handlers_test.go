@@ -203,11 +203,22 @@ func TestHandleEcho(t *testing.T) {
 				Type: parser.Array,
 				Value: []*parser.Token{
 					{Type: parser.BulkString, Value: []byte("ECHO")},
+				},
+			},
+			expected: &parser.Token{Type: parser.SimpleError, Value: "wrong argument number for ECHO command: 1"},
+			wantErr:  false,
+		},
+		{
+			name: "ECHO with too many arguments",
+			input: &parser.Token{
+				Type: parser.Array,
+				Value: []*parser.Token{
+					{Type: parser.BulkString, Value: []byte("ECHO")},
 					{Type: parser.BulkString, Value: []byte("Hello")},
 					{Type: parser.BulkString, Value: []byte("Extra")},
 				},
 			},
-			expected: &parser.Token{Type: parser.SimpleError, Value: "wrong argument number for PING command: 3"},
+			expected: &parser.Token{Type: parser.SimpleError, Value: "wrong argument number for ECHO command: 3"},
 			wantErr:  false,
 		},
 	}
