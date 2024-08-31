@@ -103,16 +103,19 @@ func TestKeyValueStore_Delete(t *testing.T) {
 	tests := []struct {
 		name    string
 		key     string
+		exists  bool
 		wantErr bool
 	}{
 		{
 			name:    "Delete existing key",
 			key:     "existing",
+			exists:  true,
 			wantErr: false,
 		},
 		{
 			name:    "Delete non-existing key",
 			key:     "nonexistent",
+			exists:  false,
 			wantErr: false, // Assuming Delete is idempotent and doesn't error on non-existent keys
 		},
 		// Add more test cases as needed
@@ -120,9 +123,13 @@ func TestKeyValueStore_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := store.Delete(tt.key)
+			e, err := store.Delete(tt.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("KeyValueStore.Delete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if e != tt.exists {
+				t.Errorf("KeyValueStore.Delete().exists = %v, Want %v", e, tt.exists)
 			}
 
 			// Check if the key was actually deleted
@@ -159,7 +166,7 @@ func TestKeyValueStore_Concurrency(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			key := fmt.Sprintf("key%d", i)
-			_ = store.Delete(key)
+			_, _ = store.Delete(key)
 		}(i)
 	}
 
