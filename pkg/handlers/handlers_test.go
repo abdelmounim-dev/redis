@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/abdelmounim-dev/redis/pkg/parser"
+	"github.com/abdelmounim-dev/redis/pkg/storage"
 )
 
 func TestHandleCommand(t *testing.T) {
@@ -65,7 +66,7 @@ func TestHandleCommand(t *testing.T) {
 					{Type: parser.BulkString, Value: []byte("AB")},
 				},
 			},
-			expected: &parser.Token{Type: parser.SimpleString, Value: "+OK\r\n"},
+			expected: &parser.Token{Type: parser.SimpleString, Value: "OK"},
 			wantErr:  false,
 		},
 		{
@@ -78,7 +79,7 @@ func TestHandleCommand(t *testing.T) {
 					{Type: parser.Integer, Value: int64(256)},
 				},
 			},
-			expected: &parser.Token{Type: parser.SimpleError, Value: "-Wrong Type, IDK man\r\n"},
+			expected: &parser.Token{Type: parser.SimpleError, Value: "Wrong Value Type: " + parser.Integer.String()},
 			wantErr:  false,
 		},
 		{
@@ -102,13 +103,15 @@ func TestHandleCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := HandleCommand(tt.input)
+			s := storage.NewKeyValueStore()
+			h := NewHandlers(s)
+			result, err := h.HandleCommand(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleCommand() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(result, tt.expected) {
-				t.Errorf("HandleCommand() = %v, want %v", result, tt.expected)
+				t.Errorf("name: %v, HandleCommand() = %v, want %v", tt.name, result, tt.expected)
 			}
 		})
 	}
@@ -161,7 +164,9 @@ func TestHandlePing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handlePing(tt.input)
+			s := storage.NewKeyValueStore()
+			h := NewHandlers(s)
+			result, err := h.handlePing(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("handlePing() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -209,13 +214,65 @@ func TestHandleEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handleEcho(tt.input)
+			s := storage.NewKeyValueStore()
+			h := NewHandlers(s)
+			result, err := h.handleEcho(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("handleEcho() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("handleEcho() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGet(t *testing.T) {
+	tests := []struct {
+		name      string
+		setup     func(s storage.Store)
+		input     string
+		expected  *parser.Token
+		expectErr bool
+	}{
+		{
+			name: "Existing Key",
+			setup: func(s storage.Store) {
+				s.Set(
+					"name",
+					&parser.Token{Type: parser.BulkString, Value: []byte("ab")},
+				)
+			},
+			input:     "name",
+			expected:  &parser.Token{Type: parser.BulkString, Value: []byte("ab")},
+			expectErr: false,
+		},
+		{
+			name: "Non-Existing Key",
+			setup: func(s storage.Store) {
+				// No setup, key doesn't exist
+			},
+			input:     "nonexistent",
+			expected:  &parser.Token{Type: parser.BulkString, Value: nil},
+			expectErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := storage.NewKeyValueStore() // Initialize your store
+			tt.setup(s)                     // Run setup function to populate data
+
+			result, err := s.Get(tt.input) // Call the Get method
+
+			if (err != nil) != tt.expectErr {
+				t.Errorf("Get() error = %v, expectErr %v", err, tt.expectErr)
+				return
+			}
+
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("name: %v, Get() = %v, want %v", tt.name, result, tt.expected)
 			}
 		})
 	}
