@@ -53,10 +53,10 @@ func (h *Handlers) handlePing(t *parser.Token) (*parser.Token, error) {
 	return t.Value.([]*parser.Token)[1], nil
 }
 func (h *Handlers) handleEcho(t *parser.Token) (*parser.Token, error) {
-	if len(t.Value.([]*parser.Token)) > 2 {
+	if len(t.Value.([]*parser.Token)) != 2 {
 		return &parser.Token{
 			Type:  parser.SimpleError,
-			Value: "wrong argument number for PING command: " + strconv.Itoa(len(t.Value.([]*parser.Token))),
+			Value: "wrong argument number for ECHO command: " + strconv.Itoa(len(t.Value.([]*parser.Token))),
 		}, nil
 	}
 	return t.Value.([]*parser.Token)[1], nil
