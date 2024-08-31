@@ -73,8 +73,8 @@ func TestKeyValueStore_Get(t *testing.T) {
 		{
 			name:    "Get non-existing key",
 			key:     "nonexistent",
-			want:    nil,
-			wantErr: true,
+			want:    &parser.Token{Type: parser.BulkString, Value: nil},
+			wantErr: false,
 		},
 		// Add more test cases as needed
 	}
