@@ -21,7 +21,7 @@ func NewParser(buf *bufio.Reader) *Parser {
 func (p *Parser) NextToken() (*Token, error) {
 	ch, err := p.buf.ReadByte()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("NEXT TOKEN: read Byte: %v", err)
 	}
 	switch ch {
 	case '+':
