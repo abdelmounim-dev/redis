@@ -9,7 +9,7 @@ import (
 type Store interface {
 	Set(key string, value *parser.Token) error
 	Get(key string) (*parser.Token, error)
-	Delete(key string) error
+	Delete(key string) (bool, error)
 }
 
 type KeyValueStore struct {
@@ -39,10 +39,14 @@ func (s *KeyValueStore) Get(key string) (*parser.Token, error) {
 	return t, nil
 }
 
-func (s *KeyValueStore) Delete(key string) error {
+func (s *KeyValueStore) Delete(key string) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	_, ok := s.data[key]
+	if !ok {
+		return false, nil
+	}
 	delete(s.data, key)
 
-	return nil
+	return true, nil
 }
