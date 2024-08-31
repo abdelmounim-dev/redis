@@ -56,6 +56,32 @@ func TestHandleCommand(t *testing.T) {
 			wantErr:  false,
 		},
 		{
+			name: "set Command",
+			input: &parser.Token{
+				Type: parser.Array,
+				Value: []*parser.Token{
+					{Type: parser.BulkString, Value: []byte("SET")},
+					{Type: parser.BulkString, Value: []byte("name")},
+					{Type: parser.BulkString, Value: []byte("AB")},
+				},
+			},
+			expected: &parser.Token{Type: parser.SimpleString, Value: "+OK\r\n"},
+			wantErr:  false,
+		},
+		{
+			name: "set Command with wrong type (integer)",
+			input: &parser.Token{
+				Type: parser.Array,
+				Value: []*parser.Token{
+					{Type: parser.BulkString, Value: []byte("SET")},
+					{Type: parser.BulkString, Value: []byte("name")},
+					{Type: parser.Integer, Value: int64(256)},
+				},
+			},
+			expected: &parser.Token{Type: parser.SimpleError, Value: "-Wrong Type, IDK man\r\n"},
+			wantErr:  false,
+		},
+		{
 			name: "Unsupported Command",
 			input: &parser.Token{
 				Type: parser.Array,
