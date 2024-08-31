@@ -7,6 +7,12 @@ import (
 	"github.com/abdelmounim-dev/redis/pkg/parser"
 )
 
+type Store interface {
+	Set(key string, value *parser.Token) error
+	Get(key string) (*parser.Token, error)
+	Delete(key string) error
+}
+
 type KeyValueStore struct {
 	data map[string]*parser.Token
 	mu   sync.RWMutex
